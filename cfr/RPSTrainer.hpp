@@ -10,6 +10,7 @@
 #define RPSTrainer_hpp
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <vector>
 
 using namespace std;
@@ -28,17 +29,23 @@ class RPSTrainer{
 private:
     
     vector<double> regretSum;
-    vector<double> strat;
-    vector<double> stratSum;
-    vector<double> oppStrat = {.4, .3, .3};
+    vector<double> strategy;
+    vector<double> strategySum;
+    vector<double> villainStrat = {.4, .3, .3};
     
-    vector<double> getStrat();
+    vector<double> getStrategy();
     
 public:
     
-    vector<double> getAction(vector<double> strat);
+    RPSTrainer(){
+        regretSum.resize(NUM_ACTIONS);
+        strategy.resize(NUM_ACTIONS);
+        strategySum.resize(NUM_ACTIONS);
+    }
+    
+    int getAction(vector<double> strat);
     void train(int iters);
-    vector<double> getAvgStrat();
+    vector<double> getAvgStrategy();
     
     
     
