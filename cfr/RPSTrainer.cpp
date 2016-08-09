@@ -9,26 +9,24 @@
 #include "RPSTrainer.hpp"
 
 
-vector<double> RPSTrainer::getStrategy(){
+vector<double> RPSTrainer::getStrategy(Player player){
     
     double normSum = 0;
     
     for (int i = 0; i < NUM_ACTIONS; i++){
-        strategy[i] = (regretSum[i] > 0) ? regretSum[i] : 0;
-        normSum += strategy[i];
+        player.strategy[i] = (player.regretSum[i] > 0) ? player.regretSum[i] : 0;
+        normSum += player.strategy[i];
     }
-    
     for (int i = 0; i < NUM_ACTIONS; i++){
         if (normSum){
-            strategy[i] /= normSum;
+            player.strategy[i] /= normSum;
         }
         else{
-            strategy[i] = 1.0 / NUM_ACTIONS;
+            player.strategy[i] = 1.0 / NUM_ACTIONS;
         }
-        strategySum[i] += strategy[i];
+        player.strategySum[i] += player.strategy[i];
     }
-    
-    return strategy;
+    return player.strategy;
 }
 
 int RPSTrainer::getAction(vector<double> strat){
@@ -40,7 +38,7 @@ int RPSTrainer::getAction(vector<double> strat){
     int i = 0;
     double cumulativeProb = 0;
     while (i < NUM_ACTIONS - 1) {
-        cumulativeProb += strategy[i];
+        cumulativeProb += strat[i];
         if (r < cumulativeProb){
             break;
         }
@@ -50,40 +48,63 @@ int RPSTrainer::getAction(vector<double> strat){
 }
 
 void RPSTrainer::train(int iters){
-    vector<double> actionUtils(NUM_ACTIONS);
+    vector<double> heroActionUtils(NUM_ACTIONS);
+    vector<double> villainActionUtils(NUM_ACTIONS);
+    
     for (int i = 0; i < iters; i++){
         
         // get strategies/actions
-        vector<double> strategy = getStrategy();
-        int myAction = getAction(strategy);
-        int villainAction = getAction(villainStrat);
+        vector<double> heroStrategy = getStrategy(hero);
+        vector<double> villainStrategy = getStrategy(villain);
+        int heroAction = getAction(heroStrategy);
+        int villainAction = getAction(villainStrategy);
         
         // compute action utilities
-        actionUtils[villainAction] = 0;
-        actionUtils[villainAction == NUM_ACTIONS - 1 ? 0: villainAction + 1] = 1;
-        actionUtils[villainAction == 0 ? NUM_ACTIONS - 1 : villainAction - 1] = -1;
+        heroActionUtils[villainAction] = 0;
+        heroActionUtils[villainAction == NUM_ACTIONS - 1 ? 0: villainAction + 1] = 1;
+        heroActionUtils[villainAction == 0 ? NUM_ACTIONS - 1 : villainAction - 1] = -1;
+        
+        villainActionUtils[heroAction] = 0;
+        villainActionUtils[heroAction == NUM_ACTIONS - 1 ? 0: heroAction + 1] = 1;
+        villainActionUtils[heroAction == 0 ? NUM_ACTIONS - 1 : heroAction - 1] = -1;
         
         //accumulate regrets
         for (int i = 0; i < NUM_ACTIONS; i++){
-            regretSum[i] += actionUtils[i] - actionUtils[myAction];
+            hero.regretSum[i] += heroActionUtils[i] - heroActionUtils[heroAction];
+            villain.regretSum[i] += villainActionUtils[i] - villainActionUtils[villainAction];
         }
     }
 }
 
-vector<double> RPSTrainer::getAvgStrategy(){
-    vector<double> avgStrategy(NUM_ACTIONS);
-    double normSum = 0;
+vector<vector<double>> RPSTrainer::getAvgStrategies(){
+    vector<double> avgStrategyHero(NUM_ACTIONS);
+    vector<double> avgStrategyVillain(NUM_ACTIONS);
+    double normSumHero = 0;
+    double normSumVillain = 0;
+    
     
     for (int i = 0; i < NUM_ACTIONS; i++){
-        normSum += strategySum[i];
+        normSumHero += hero.strategySum[i];
+        normSumVillain += villain.strategySum[i];
     }
     for (int i = 0; i < NUM_ACTIONS; i++){
-        if (normSum > 0){
-            avgStrategy[i] = strategySum[i] / normSum;
+        if (normSumHero > 0){
+            avgStrategyHero[i] = hero.strategySum[i] / normSumHero;
         }
         else{
-            avgStrategy[i] = 1.0 / NUM_ACTIONS;
+            avgStrategyHero[i] = 1.0 / NUM_ACTIONS;
         }
+        if (normSumVillain > 0){
+            avgStrategyVillain[i] = villain.strategySum[i] / normSumVillain;
+        }
+        else{
+            avgStrategyVillain[i] = 1.0 / NUM_ACTIONS;
+        }
+        
     }
-    return avgStrategy;
+    vector<vector<double>> strategies(2);
+    strategies[0] = avgStrategyHero;
+    strategies[1] = avgStrategyVillain;
+    
+    return strategies;
 }
