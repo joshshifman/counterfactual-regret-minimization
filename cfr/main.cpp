@@ -15,13 +15,20 @@ using namespace std;
 
 int main(int argc, const char * argv[]) {
     
-    RPSTrainer trainer;
-    trainer.train(1000);
     
-    vector<double> avg = trainer.getAvgStrategy();
+    Player hero({.1, .6, .3});
+    Player villain({.1, .6, .3});
     
-    for (auto i : avg)
-        cout << i << endl;
+    RPSTrainer trainer(hero, villain);
+    trainer.train(1);
     
+    vector<vector<double>> avgs = trainer.getAvgStrategies();
+    
+    for (auto strat : avgs){
+        for(auto i : strat){
+            cout << i << endl;
+        }
+        cout << endl;
+    }
     return 0;
 }
