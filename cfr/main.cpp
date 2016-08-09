@@ -15,13 +15,13 @@ using namespace std;
 
 int main(int argc, const char * argv[]) {
     
+    RPSTrainer trainer;
+    trainer.train(1000);
     
-    vector<double> oppStrat = {.4, .3, .3};
+    vector<double> avg = trainer.getAvgStrategy();
     
-    for (auto i : oppStrat)
+    for (auto i : avg)
         cout << i << endl;
-    
-    
     
     return 0;
 }
