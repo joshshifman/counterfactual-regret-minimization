@@ -8,7 +8,6 @@
 
 #include "RPSTrainer.hpp"
 
-
 vector<double> RPSTrainer::getStrategy(Player player){
     
     double normSum = 0;
@@ -81,7 +80,6 @@ vector<vector<double>> RPSTrainer::getAvgStrategies(){
     vector<double> avgStrategyVillain(NUM_ACTIONS);
     double normSumHero = 0;
     double normSumVillain = 0;
-    
     
     for (int i = 0; i < NUM_ACTIONS; i++){
         normSumHero += hero.strategySum[i];
